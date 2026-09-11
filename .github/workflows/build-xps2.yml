@@ -3,7 +3,7 @@ name: Build XPS2 APK
 on:
   workflow_dispatch:
   push:
-    branches: ["main"]
+    branches: [main]
 
 jobs:
   build:
@@ -22,25 +22,29 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install SDK, NDK and CMake
+      - name: Install Android dependencies
         run: |
-          sdkmanager "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0" \
-            "ndk;25.2.9519653" \
-            "cmake;3.31.1"
+          sdkmanager "platforms;android-35"
+          sdkmanager "build-tools;34.0.0"
+          sdkmanager "ndk;25.2.9519653"
+          sdkmanager "cmake;3.31.1"
 
-      - name: Build release APK
+      - name: Create local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > xps2/build_android/local.properties
+
+      - name: Build XPS2 APK
         working-directory: xps2/build_android
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          ./gradlew assembleRelease --no-daemon
 
-      - name: Upload APK
+      - name: Upload XPS2 APK
         uses: actions/upload-artifact@v4
         with:
-          name: XPS2-armeabi-v7a-release
-          path: xps2/build_android/build/outputs/apk/release/*.apk
+          name: XPS2-Android-ARMv7
+          path: xps2/build_android/app/build/outputs/apk/release/*.apk
